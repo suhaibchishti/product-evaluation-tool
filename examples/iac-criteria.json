@@ -1,0 +1,12 @@
+{
+  "criteria": [
+    {"id": "ux", "name": "Developer Experience"},
+    {"id": "docs", "name": "Documentation Quality"},
+    {"id": "support", "name": "Enterprise Support"},
+    {"id": "adoption", "name": "Industry Adoption"},
+    {"id": "bootstrap", "name": "Bootstrap Speed"},
+    {"id": "multicloud", "name": "Multi-Cloud Support"},
+    {"id": "policy", "name": "Policy/Governance"},
+    {"id": "talent", "name": "Talent Availability"}
+  ]
+}

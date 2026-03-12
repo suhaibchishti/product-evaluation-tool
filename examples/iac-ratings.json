@@ -1,0 +1,44 @@
+{
+  "tools": {
+    "terraform": {
+      "ux": 3,
+      "docs": 5,
+      "support": 5,
+      "adoption": 5,
+      "bootstrap": 4,
+      "multicloud": 5,
+      "policy": 4,
+      "talent": 5
+    },
+    "pulumi": {
+      "ux": 5,
+      "docs": 4,
+      "support": 4,
+      "adoption": 3,
+      "bootstrap": 4,
+      "multicloud": 5,
+      "policy": 4,
+      "talent": 3
+    },
+    "bicep": {
+      "ux": 4,
+      "docs": 4,
+      "support": 5,
+      "adoption": 3,
+      "bootstrap": 5,
+      "multicloud": 1,
+      "policy": 5,
+      "talent": 3
+    },
+    "cloudformation": {
+      "ux": 2,
+      "docs": 4,
+      "support": 5,
+      "adoption": 4,
+      "bootstrap": 3,
+      "multicloud": 1,
+      "policy": 4,
+      "talent": 4
+    }
+  }
+}
