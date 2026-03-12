@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Evaluation Tool — Decision Clarification Engine</title>
+    <meta name="description" content="Interactive decision clarification tool for enterprise product selection. Compare tools with weighted criteria, sensitivity analysis, and persona-based evaluation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.04);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(99, 102, 241, 0.4);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
+            --gradient-cool: linear-gradient(135deg, #06b6d4, #3b82f6);
+            --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(6,182,212,0.04) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── Header ─────────────────────────────────────────── */
+        header {
+            padding: 48px 0 32px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -0.03em;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ─── Glass Cards ────────────────────────────────────── */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-active);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 1.3rem;
+        }
+
+        /* ─── Input Section ──────────────────────────────────── */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .input-grid { grid-template-columns: 1fr; }
+        }
+
+        .input-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: border-color var(--transition);
+        }
+
+        .input-panel:focus-within {
+            border-color: var(--border-active);
+        }
+
+        .input-panel label {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            font-weight: 700;
+            margin-left: 8px;
+            cursor: help;
+            position: relative;
+            transition: all var(--transition);
+        }
+
+        .info-icon:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .info-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 150%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: pre-wrap;
+            width: 220px;
+            text-align: center;
+            border: 1px solid var(--border-active);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 10;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .info-icon::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--border-active) transparent transparent transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .info-icon:hover::after,
+        .info-icon:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .input-panel textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color var(--transition);
+        }
+
+        .input-panel textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* ─── Buttons ────────────────────────────────────────── */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-active);
+            color: var(--text-primary);
+        }
+
+        /* ─── Weight Sliders ─────────────────────────────────── */
+        .weight-slider-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .weight-slider-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border-glass);
+            transition: border-color var(--transition);
+        }
+
+        .weight-slider-item:hover {
+            border-color: var(--border-active);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-header .name {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .slider-header .value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.12);
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .slider-header .percent {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* ─── Results Section ────────────────────────────────── */
+        #results-section {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ─── Ranking Bars ───────────────────────────────────── */
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-glass);
+            transition: all var(--transition);
+        }
+
+        .rank-item:hover {
+            border-color: var(--border-active);
+            transform: translateX(4px);
+        }
+
+        .rank-position {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            min-width: 32px;
+        }
+
+        .rank-position.gold { color: #fbbf24; }
+        .rank-position.silver { color: #94a3b8; }
+        .rank-position.bronze { color: #d97706; }
+
+        .rank-info {
+            flex: 1;
+        }
+
+        .rank-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .rank-bar-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rank-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rank-score {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* ─── Sensitivity Table ──────────────────────────────── */
+        .sensitivity-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.88rem;
+        }
+
+        .sensitivity-table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .sensitivity-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .sensitivity-table tr:hover td {
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        .flip-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            margin-left: 8px;
+        }
+
+        /* ─── Tool Profile Cards ─────────────────────────────── */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .profile-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            transition: all var(--transition);
+        }
+
+        .profile-card:hover {
+            border-color: var(--border-active);
+            transform: translateY(-2px);
+        }
+
+        .profile-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .profile-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 2px 4px 2px 0;
+        }
+
+        .profile-tag.strength {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .profile-tag.weakness {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .profile-detail {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ─── Heatmap ────────────────────────────────────────── */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+
+        .heatmap {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .heatmap-cell {
+            padding: 10px 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all var(--transition);
+            cursor: default;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .heatmap-header {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 8px 6px;
+        }
+
+        .heatmap-label {
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 10px 8px;
+        }
+
+        /* ─── Footer ─────────────────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        /* ─── Animations ─────────────────────────────────────── */
+        .animate-in {
+            animation: slideUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Notification ───────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-active);
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            z-index: 1000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* ─── Drop Zone ──────────────────────────────────────── */
+        .drop-zone {
+            border: 2px dashed var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-top: 10px;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+
+        .drop-zone:hover, .drop-zone.active {
+            border-color: var(--accent-primary);
+            color: var(--text-secondary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* ─── Persona Tabs ───────────────────────────────────── */
+        .persona-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .persona-tab {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid var(--border-glass);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .persona-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+        }
+
+        .persona-tab:hover:not(.active) {
+            border-color: var(--border-active);
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border-glass);
+            margin: 32px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Product Evaluation Tool</h1>
+            <p>A decision clarification engine. Force hidden assumptions into the open through explicit criteria, ratings, and weights.</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="input-grid" id="input-grid">
+            <div class="input-panel" id="criteria-panel">
+                <label>📋 Criteria <span class="info-icon" data-tooltip="Define the categories that matter for your evaluation (e.g. Developer Experience, Support).">i</span></label>
+                <textarea id="criteria-input" spellcheck="false" placeholder='Paste criteria JSON...'></textarea>
+                <div class="drop-zone" data-target="criteria-input">
+                    📁 Drop JSON file here
+                    <input type="file" accept=".json" style="display:none">
+                </div>
+            </div>
+
+            <div class="input-panel" id="ratings-panel">
+                <label>⭐ Ratings <span class="info-icon" data-tooltip="Score each product 1-5 against your criteria. Can include confidence and notes.">i</span></label>
+                <textarea id="ratings-input" spellcheck="false" placeholder='Paste ratings JSON...'></textarea>
+                <div class="drop-zone" data-target="ratings-input">
+                    📁 Drop JSON file here
+                    <input type="file" accept=".json" style="display:none">
+                </div>
+            </div>
+
+            <div class="input-panel" id="weights-panel">
+                <label>⚖️ Weights <span class="info-icon" data-tooltip="Assign relative importance to each criteria. Higher numbers = more important. Allows multiple persona profiles.">i</span></label>
+                <textarea id="weights-input" spellcheck="false" placeholder='Paste weights JSON...'></textarea>
+                <div class="drop-zone" data-target="weights-input">
+                    📁 Drop JSON file here
+                    <input type="file" accept=".json" style="display:none">
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-evaluate" onclick="runEvaluation()">🚀 Evaluate</button>
+            <button class="btn btn-secondary" id="btn-example" onclick="loadExample()">📦 Load IaC Example</button>
+            <button class="btn btn-secondary" id="btn-clear" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section">
+            <!-- Persona Tabs (hidden by default) -->
+            <div id="persona-tabs-container" style="display:none">
+                <div class="persona-tabs" id="persona-tabs"></div>
+            </div>
+
+            <!-- Ranking + Active Weights -->
+            <div class="results-grid">
+                <div class="card animate-in" id="ranking-card">
+                    <div class="card-title"><span class="icon">📊</span> Weighted Ranking</div>
+                    <div id="ranking-content"></div>
+                </div>
+
+                <div class="card animate-in" id="weights-card" style="animation-delay: 0.1s">
+                    <div class="card-title"><span class="icon">⚖️</span> Active Weights</div>
+                    <div class="weight-slider-group" id="weight-sliders"></div>
+                </div>
+            </div>
+
+            <!-- Tool Profiles -->
+            <div class="card animate-in" id="profiles-card" style="animation-delay: 0.2s">
+                <div class="card-title"><span class="icon">🔍</span> Tool Profiles</div>
+                <div class="profile-grid" id="profiles-content"></div>
+            </div>
+
+            <!-- Sensitivity Analysis -->
+            <div class="card animate-in" id="sensitivity-card" style="animation-delay: 0.3s">
+                <div class="card-title"><span class="icon">🎯</span> Sensitivity Analysis</div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                    How rankings change when individual criteria are prioritized (3× weight boost)
+                </p>
+                <div id="sensitivity-content"></div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="card animate-in" id="heatmap-card" style="animation-delay: 0.4s">
+                <div class="card-title"><span class="icon">🗺️</span> Score Heatmap</div>
+                <div class="heatmap-container" id="heatmap-content"></div>
+            </div>
+
+            <!-- Export -->
+            <div class="btn-row" style="margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="exportMarkdown()">📄 Export Markdown</button>
+                <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>Product Evaluation Tool — Multi-Criteria Decision Analysis (MCDA)</p>
+            <p style="margin-top: 4px;">A structured approach to <strong>multi-criteria decision analysis</strong> — making tradeoffs visible through weighted evaluation.</p>
+        </footer>
+    </div>
+
+    <script>
+    // ─── State ──────────────────────────────────────────────────────────────
+    let state = {
+        criteria: [],
+        scores: {},
+        confidences: {},
+        notes: {},
+        weights: {},
+        personas: null,
+        activePersona: null,
+    };
+
+    // ─── Example Data ───────────────────────────────────────────────────────
+    const EXAMPLE_CRITERIA = {
+        criteria: [
+            { id: "ux", name: "Developer Experience" },
+            { id: "docs", name: "Documentation Quality" },
+            { id: "support", name: "Enterprise Support" },
+            { id: "adoption", name: "Industry Adoption" },
+            { id: "bootstrap", name: "Bootstrap Speed" },
+            { id: "multicloud", name: "Multi-Cloud Support" },
+            { id: "policy", name: "Policy/Governance" },
+            { id: "talent", name: "Talent Availability" },
+        ],
+    };
+
+    const EXAMPLE_RATINGS = {
+        tools: {
+            terraform: { ux: 3, docs: 5, support: 5, adoption: 5, bootstrap: 4, multicloud: 5, policy: 4, talent: 5 },
+            pulumi:    { ux: 5, docs: 4, support: 4, adoption: 3, bootstrap: 4, multicloud: 5, policy: 4, talent: 3 },
+            bicep:     { ux: 4, docs: 4, support: 5, adoption: 3, bootstrap: 5, multicloud: 1, policy: 5, talent: 3 },
+            cloudformation: { ux: 2, docs: 4, support: 5, adoption: 4, bootstrap: 3, multicloud: 1, policy: 4, talent: 4 },
+        },
+    };
+
+    const EXAMPLE_WEIGHTS = {
+        weights: {
+            ux: 5, docs: 3, support: 2, adoption: 3,
+            bootstrap: 5, multicloud: 4, policy: 1, talent: 3,
+        },
+    };
+
+    // ─── Core Engine ────────────────────────────────────────────────────────
+    function parseRating(value) {
+        if (typeof value === "object" && value !== null) {
+            return { score: value.score || 0, confidence: value.confidence || null, note: value.note || null };
+        }
+        return { score: value, confidence: null, note: null };
+    }
+
+    function normalizeRatings(toolsRaw) {
+        const scores = {}, conf = {}, notes = {};
+        for (const [name, ratings] of Object.entries(toolsRaw)) {
+            scores[name] = {}; conf[name] = {}; notes[name] = {};
+            for (const [cid, val] of Object.entries(ratings)) {
+                const r = parseRating(val);
+                scores[name][cid] = r.score;
+                conf[name][cid] = r.confidence;
+                notes[name][cid] = r.note;
+            }
+        }
+        return { scores, conf, notes };
+    }
+
+    function normalizeWeights(weights) {
+        const total = Object.values(weights).reduce((a, b) => a + b, 0);
+        if (total === 0) return Object.fromEntries(Object.keys(weights).map(k => [k, 0]));
+        return Object.fromEntries(Object.entries(weights).map(([k, v]) => [k, v / total]));
+    }
+
+    function scoreTool(toolScores, normWeights) {
+        return Object.entries(normWeights).reduce((sum, [c, w]) => sum + (toolScores[c] || 0) * w, 0);
+    }
+
+    function rankTools(scores, weights) {
+        const nw = normalizeWeights(weights);
+        return Object.entries(scores)
+            .map(([name, s]) => ({ name, score: scoreTool(s, nw) }))
+            .sort((a, b) => b.score - a.score);
+    }
+
+    function analyzeSensitivity(scores, baseWeights, criteriaIds) {
+        const results = {};
+        for (const cid of criteriaIds) {
+            const boosted = Object.fromEntries(
+                Object.entries(baseWeights).map(([k, v]) => [k, k === cid ? v * 3 : v])
+            );
+            results[cid] = rankTools(scores, boosted);
+        }
+        return results;
+    }
+
+    // ─── UI Functions ───────────────────────────────────────────────────────
+    function loadExample() {
+        document.getElementById("criteria-input").value = JSON.stringify(EXAMPLE_CRITERIA, null, 2);
+        document.getElementById("ratings-input").value = JSON.stringify(EXAMPLE_RATINGS, null, 2);
+        document.getElementById("weights-input").value = JSON.stringify(EXAMPLE_WEIGHTS, null, 2);
+        showToast("IaC example loaded — click Evaluate!");
+    }
+
+    function clearAll() {
+        document.getElementById("criteria-input").value = "";
+        document.getElementById("ratings-input").value = "";
+        document.getElementById("weights-input").value = "";
+        document.getElementById("results-section").style.display = "none";
+        state = { criteria: [], scores: {}, confidences: {}, notes: {}, weights: {}, personas: null, activePersona: null };
+    }
+
+    function runEvaluation() {
+        try {
+            const criteriaData = JSON.parse(document.getElementById("criteria-input").value);
+            const ratingsData = JSON.parse(document.getElementById("ratings-input").value);
+            const weightsData = JSON.parse(document.getElementById("weights-input").value);
+
+            state.criteria = criteriaData.criteria;
+            const { scores, conf, notes } = normalizeRatings(ratingsData.tools);
+            state.scores = scores;
+            state.confidences = conf;
+            state.notes = notes;
+
+            // Check for personas
+            if (weightsData.personas) {
+                state.personas = weightsData.personas;
+                const firstPersona = Object.keys(weightsData.personas)[0];
+                state.activePersona = firstPersona;
+                state.weights = { ...weightsData.personas[firstPersona] };
+                renderPersonaTabs();
+            } else {
+                state.personas = null;
+                state.activePersona = null;
+                state.weights = { ...weightsData.weights };
+                document.getElementById("persona-tabs-container").style.display = "none";
+            }
+
+            renderResults();
+            document.getElementById("results-section").style.display = "block";
+            document.getElementById("results-section").scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (e) {
+            showToast("❌ Invalid JSON: " + e.message);
+        }
+    }
+
+    function renderResults() {
+        renderRanking();
+        renderWeightSliders();
+        renderProfiles();
+        renderSensitivity();
+        renderHeatmap();
+    }
+
+    function renderRanking() {
+        const ranked = rankTools(state.scores, state.weights);
+        const maxScore = ranked[0]?.score || 1;
+        const container = document.getElementById("ranking-content");
+        container.innerHTML = ranked.map((tool, i) => {
+            const pct = (tool.score / 5) * 100;
+            const posClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+            return `
+                <div class="rank-item">
+                    <div class="rank-position ${posClass}">#${i + 1}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">${tool.name}</div>
+                        <div class="rank-bar-track">
+                            <div class="rank-bar-fill" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                    <div class="rank-score">${tool.score.toFixed(2)}</div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function renderWeightSliders() {
+        const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
+        const container = document.getElementById("weight-sliders");
+        container.innerHTML = state.criteria.map(c => {
+            const val = state.weights[c.id] || 0;
+            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+            return `
+                <div class="weight-slider-item">
+                    <div class="slider-header">
+                        <span class="name">${c.name}</span>
+                        <span>
+                            <span class="value">${val}</span>
+                            <span class="percent">${pct}%</span>
+                        </span>
+                    </div>
+                    <input type="range" min="0" max="10" value="${val}"
+                        data-crit="${c.id}" oninput="onWeightChange(this)">
+                </div>
+            `;
+        }).join("");
+    }
+
+    function onWeightChange(slider) {
+        const critId = slider.dataset.crit;
+        const val = parseInt(slider.value);
+        state.weights[critId] = val;
+        renderResults();
+    }
+
+    function renderProfiles() {
+        const cnames = Object.fromEntries(state.criteria.map(c => [c.id, c.name]));
+        const container = document.getElementById("profiles-content");
+
+        container.innerHTML = Object.entries(state.scores).map(([name, toolScores]) => {
+            const sorted = Object.entries(toolScores).sort((a, b) => b[1] - a[1]);
+            const strengths = sorted.slice(0, 3);
+            const weaknesses = sorted.slice(-2);
+
+            let strengthTags = strengths.map(([cid, s]) => {
+                let noteHtml = "";
+                if (state.notes[name]?.[cid]) {
+                    noteHtml = `<div class="profile-detail">${state.notes[name][cid]}</div>`;
+                }
+                return `<span class="profile-tag strength">✓ ${cnames[cid] || cid}: ${s}/5</span>${noteHtml}`;
+            }).join("");
+
+            let weakTags = weaknesses
+                .filter(([cid]) => !strengths.find(s => s[0] === cid))
+                .map(([cid, s]) => `<span class="profile-tag weakness">✗ ${cnames[cid] || cid}: ${s}/5</span>`)
+                .join("");
+
+            return `
+                <div class="profile-card">
+                    <h4>${name}</h4>
+                    <div>${strengthTags}</div>
+                    <div style="margin-top: 8px;">${weakTags}</div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function renderSensitivity() {
+        const cnames = Object.fromEntries(state.criteria.map(c => [c.id, c.name]));
+        const critIds = state.criteria.map(c => c.id);
+        const baseRanked = rankTools(state.scores, state.weights);
+        const baseWinner = baseRanked[0]?.name;
+        const sensitivity = analyzeSensitivity(state.scores, state.weights, critIds);
+
+        const container = document.getElementById("sensitivity-content");
+        let html = `<table class="sensitivity-table">
+            <thead><tr>
+                <th>If you heavily prioritize…</th>
+                <th>Winner</th>
+                <th>Score</th>
+            </tr></thead><tbody>`;
+
+        for (const cid of critIds) {
+            const sRanked = sensitivity[cid];
+            const winner = sRanked[0];
+            const isFlip = winner.name !== baseWinner;
+            const flipBadge = isFlip ? '<span class="flip-badge">⚡ FLIP</span>' : '';
+
+            html += `<tr>
+                <td>${cnames[cid] || cid}</td>
+                <td>${winner.name}${flipBadge}</td>
+                <td>${winner.score.toFixed(2)}</td>
+            </tr>`;
+        }
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    function renderHeatmap() {
+        const cnames = Object.fromEntries(state.criteria.map(c => [c.id, c.name]));
+        const critIds = state.criteria.map(c => c.id);
+        const toolNames = Object.keys(state.scores);
+        const cols = toolNames.length + 1;
+
+        const container = document.getElementById("heatmap-content");
+        let html = `<div class="heatmap" style="grid-template-columns: 180px repeat(${toolNames.length}, 1fr);">`;
+
+        // Header row
+        html += `<div class="heatmap-header"></div>`;
+        for (const tool of toolNames) {
+            html += `<div class="heatmap-header" style="text-align:center">${tool}</div>`;
+        }
+
+        // Data rows
+        for (const cid of critIds) {
+            html += `<div class="heatmap-label">${cnames[cid] || cid}</div>`;
+            const allScores = toolNames.map(t => state.scores[t][cid] || 0);
+            const maxS = Math.max(...allScores);
+            const minS = Math.min(...allScores);
+
+            for (const tool of toolNames) {
+                const s = state.scores[tool][cid] || 0;
+                const intensity = s / 5;
+                let bg, color;
+                if (s >= 4) {
+                    bg = `rgba(16, 185, 129, ${0.1 + intensity * 0.2})`;
+                    color = "#10b981";
+                } else if (s >= 3) {
+                    bg = `rgba(245, 158, 11, ${0.08 + intensity * 0.12})`;
+                    color = "#f59e0b";
+                } else {
+                    bg = `rgba(239, 68, 68, ${0.08 + intensity * 0.15})`;
+                    color = "#ef4444";
+                }
+                const best = s === maxS && maxS > minS ? " font-weight: 800;" : "";
+                html += `<div class="heatmap-cell" style="background:${bg}; color:${color};${best}">${s}</div>`;
+            }
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    function renderPersonaTabs() {
+        if (!state.personas) return;
+        const container = document.getElementById("persona-tabs-container");
+        container.style.display = "block";
+
+        const tabsEl = document.getElementById("persona-tabs");
+        tabsEl.innerHTML = Object.keys(state.personas).map(name => {
+            const active = name === state.activePersona ? "active" : "";
+            return `<button class="persona-tab ${active}" onclick="switchPersona('${name}')">${name}</button>`;
+        }).join("");
+    }
+
+    function switchPersona(name) {
+        state.activePersona = name;
+        state.weights = { ...state.personas[name] };
+        renderPersonaTabs();
+        renderResults();
+    }
+
+    // ─── Export ──────────────────────────────────────────────────────────────
+    function exportMarkdown() {
+        const cnames = Object.fromEntries(state.criteria.map(c => [c.id, c.name]));
+        const critIds = state.criteria.map(c => c.id);
+        const ranked = rankTools(state.scores, state.weights);
+        const nw = normalizeWeights(state.weights);
+        const sensitivity = analyzeSensitivity(state.scores, state.weights, critIds);
+        const baseWinner = ranked[0]?.name;
+
+        let md = `# Product Evaluation Report\n\n`;
+        if (state.activePersona) md += `**Persona:** ${state.activePersona}\n\n`;
+
+        md += `## Weighted Ranking\n\n| Rank | Product | Score |\n|------|---------|-------|\n`;
+        ranked.forEach((t, i) => md += `| ${i+1} | ${t.name} | ${t.score.toFixed(2)} |\n`);
+
+        md += `\n## Active Weights\n\n| Criterion | Weight |\n|-----------|--------|\n`;
+        Object.entries(nw)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([cid, w]) => md += `| ${cnames[cid] || cid} | ${(w*100).toFixed(1)}% |\n`);
+
+        md += `\n## Detailed Scores\n\n`;
+        md += `| Product | ${critIds.map(c => cnames[c] || c).join(" | ")} |\n`;
+        md += `|---------|${critIds.map(() => "------").join("|")}|\n`;
+        Object.entries(state.scores).forEach(([name, s]) => {
+            md += `| ${name} | ${critIds.map(c => s[c] || "-").join(" | ")} |\n`;
+        });
+
+        md += `\n## Sensitivity Analysis\n\n| If you heavily prioritize... | Winner |\n|------------------------------|--------|\n`;
+        for (const cid of critIds) {
+            const winner = sensitivity[cid][0];
+            const flip = winner.name !== baseWinner ? " ⚡" : "";
+            md += `| ${cnames[cid] || cid} | ${winner.name}${flip} |\n`;
+        }
+
+        md += `\n---\n*Generated by Product Evaluation Tool*\n`;
+
+        downloadFile("evaluation-report.md", md, "text/markdown");
+        showToast("📄 Markdown report downloaded");
+    }
+
+    function exportCSV() {
+        const cnames = Object.fromEntries(state.criteria.map(c => [c.id, c.name]));
+        const critIds = state.criteria.map(c => c.id);
+        const ranked = rankTools(state.scores, state.weights);
+        const nw = normalizeWeights(state.weights);
+
+        let csv = `Product,Weighted Score,${critIds.map(c => cnames[c] || c).join(",")}\n`;
+        ranked.forEach(t => {
+            csv += `${t.name},${t.score.toFixed(2)},${critIds.map(c => state.scores[t.name][c] || "").join(",")}\n`;
+        });
+        csv += `\nWeights,,${critIds.map(c => (nw[c]*100).toFixed(1) + "%").join(",")}\n`;
+
+        downloadFile("evaluation-report.csv", csv, "text/csv");
+        showToast("📊 CSV report downloaded");
+    }
+
+    function downloadFile(filename, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ─── Drag & Drop ────────────────────────────────────────────────────────
+    document.querySelectorAll(".drop-zone").forEach(zone => {
+        const targetId = zone.dataset.target;
+        const fileInput = zone.querySelector("input[type=file]");
+
+        zone.addEventListener("click", () => fileInput.click());
+
+        zone.addEventListener("dragover", e => {
+            e.preventDefault();
+            zone.classList.add("active");
+        });
+
+        zone.addEventListener("dragleave", () => zone.classList.remove("active"));
+
+        zone.addEventListener("drop", e => {
+            e.preventDefault();
+            zone.classList.remove("active");
+            const file = e.dataTransfer.files[0];
+            if (file) readFileInto(file, targetId);
+        });
+
+        fileInput.addEventListener("change", e => {
+            const file = e.target.files[0];
+            if (file) readFileInto(file, targetId);
+        });
+    });
+
+    function readFileInto(file, targetId) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById(targetId).value = reader.result;
+            showToast(`📁 Loaded ${file.name}`);
+        };
+        reader.readAsText(file);
+    }
+
+    // ─── Toast ──────────────────────────────────────────────────────────────
+    function showToast(message) {
+        const existing = document.querySelector(".toast");
+        if (existing) existing.remove();
+
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    </script>
+</body>
+</html>

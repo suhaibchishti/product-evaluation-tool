@@ -1,0 +1,44 @@
+{
+  "personas": {
+    "Platform Engineer": {
+      "ux": 5,
+      "docs": 3,
+      "support": 3,
+      "adoption": 4,
+      "bootstrap": 5,
+      "multicloud": 5,
+      "policy": 3,
+      "talent": 3
+    },
+    "Security Lead": {
+      "ux": 2,
+      "docs": 3,
+      "support": 5,
+      "adoption": 3,
+      "bootstrap": 1,
+      "multicloud": 2,
+      "policy": 5,
+      "talent": 4
+    },
+    "Engineering Manager": {
+      "ux": 4,
+      "docs": 4,
+      "support": 4,
+      "adoption": 5,
+      "bootstrap": 3,
+      "multicloud": 3,
+      "policy": 3,
+      "talent": 5
+    },
+    "VP of Infrastructure": {
+      "ux": 2,
+      "docs": 3,
+      "support": 5,
+      "adoption": 5,
+      "bootstrap": 2,
+      "multicloud": 4,
+      "policy": 5,
+      "talent": 5
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "tools": {
+    "terraform": {
+      "ux": {"score": 3, "confidence": 5, "note": "HCL is declarative but verbose. State management adds complexity."},
+      "docs": {"score": 5, "confidence": 5, "note": "Extensive official docs, large community knowledge base."},
+      "support": {"score": 5, "confidence": 4, "note": "HashiCorp enterprise tier. Acquired by IBM."},
+      "adoption": {"score": 5, "confidence": 5, "note": "Industry standard. Most IaC job postings require Terraform."},
+      "bootstrap": {"score": 4, "confidence": 4, "note": "Many starter modules available, but initial setup has learning curve."},
+      "multicloud": {"score": 5, "confidence": 5, "note": "Provider model supports all major clouds natively."},
+      "policy": {"score": 4, "confidence": 4, "note": "Sentinel (paid) and OPA integration. Strong but requires enterprise tier."},
+      "talent": {"score": 5, "confidence": 5, "note": "Largest IaC talent pool by far."}
+    },
+    "pulumi": {
+      "ux": {"score": 5, "confidence": 4, "note": "Write in real languages (Python, TS, Go). Best IDE support."},
+      "docs": {"score": 4, "confidence": 4, "note": "Good docs, growing. Not as comprehensive as Terraform yet."},
+      "support": {"score": 4, "confidence": 3, "note": "Enterprise tier available. Smaller company, less proven at scale."},
+      "adoption": {"score": 3, "confidence": 4, "note": "Growing fast but still niche compared to Terraform."},
+      "bootstrap": {"score": 4, "confidence": 4, "note": "Templates available. Language familiarity speeds onboarding."},
+      "multicloud": {"score": 5, "confidence": 5, "note": "Full multi-cloud support via provider ecosystem."},
+      "policy": {"score": 4, "confidence": 3, "note": "CrossGuard policy-as-code. Newer, less battle-tested."},
+      "talent": {"score": 3, "confidence": 4, "note": "Smaller talent pool, but developers learn fast (familiar languages)."}
+    },
+    "bicep": {
+      "ux": {"score": 4, "confidence": 4, "note": "Clean DSL, excellent VS Code extension. Azure-only limits scope."},
+      "docs": {"score": 4, "confidence": 4, "note": "Microsoft docs are solid. Azure-focused community."},
+      "support": {"score": 5, "confidence": 5, "note": "First-party Microsoft support. Backed by Azure engineering."},
+      "adoption": {"score": 3, "confidence": 4, "note": "Growing in Azure shops. Not relevant outside Azure."},
+      "bootstrap": {"score": 5, "confidence": 4, "note": "Tight Azure integration means fast Azure deployments."},
+      "multicloud": {"score": 1, "confidence": 5, "note": "Azure only. No multi-cloud capability."},
+      "policy": {"score": 5, "confidence": 4, "note": "Azure Policy integration is native and comprehensive."},
+      "talent": {"score": 3, "confidence": 3, "note": "Azure-focused talent. ARM template experience transfers."}
+    },
+    "cloudformation": {
+      "ux": {"score": 2, "confidence": 5, "note": "JSON/YAML templates are verbose and error-prone."},
+      "docs": {"score": 4, "confidence": 5, "note": "Comprehensive AWS docs. Well-established."},
+      "support": {"score": 5, "confidence": 5, "note": "First-party AWS support. Deeply integrated with AWS services."},
+      "adoption": {"score": 4, "confidence": 5, "note": "Default for AWS-native shops. Declining in favor of CDK/Terraform."},
+      "bootstrap": {"score": 3, "confidence": 4, "note": "Many templates available but verbose setup."},
+      "multicloud": {"score": 1, "confidence": 5, "note": "AWS only."},
+      "policy": {"score": 4, "confidence": 4, "note": "AWS Config rules, SCPs. AWS-native governance."},
+      "talent": {"score": 4, "confidence": 4, "note": "Large AWS talent pool familiar with CloudFormation."}
+    }
+  }
+}
